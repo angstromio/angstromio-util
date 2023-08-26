@@ -15,8 +15,11 @@ plugins {
     id 'java-library'
 
     id 'maven-publish'
-//    id 'signing'
+    id 'signing'
 }
+
+group 'io.angstrom'
+version '0.0.1-SNAPSHOT'
 
 tasks.named('jar') {
     manifest {
@@ -66,9 +69,9 @@ java {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            groupId = 'io.angstrom'
-            artifactId = 'angstromio-util'
-            version = '0.0.1-SNAPSHOT'
+            groupId = group
+            artifactId = rootProject.name
+            version = version
             from components.java
             versionMapping {
                 usage('java-api') {
@@ -79,7 +82,7 @@ publishing {
                 }
             }
             pom {
-                name = 'angstromio-util'
+                name = rootProject.name
                 description = 'A collection of Kotlin utilities.'
                 url = 'https://angstrom.io/github/angstromio/angstromio-util/'
                 licenses {
