@@ -40,13 +40,12 @@ import io.kotest.matchers.should
 import io.kotest.matchers.shouldNot
 import org.junit.jupiter.api.assertThrows
 import kotlin.reflect.KClass
-import kotlin.test.assertTrue
 
 class AnnotationsTest : FunSpec() {
 
     private fun getAnnotations(clazz: KClass<*> = ClassOneTwoThreeFour::class): List<Annotation> {
         val annotationMap: Map<String, List<Annotation>> = Annotations.getConstructorAnnotations(clazz)
-        assertTrue(annotationMap.isNotEmpty())
+        annotationMap.isNotEmpty() should be(true)
         return annotationMap.flatMap { (_, annotations) -> annotations.toList() }
     }
 
