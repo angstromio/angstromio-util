@@ -11,4 +11,14 @@ object NonFatal {
             else -> true
         }
     }
+
+    inline fun <reified T: Any> tryOrNull(f: () -> T?) =
+        try {
+            f()
+        } catch (e: Exception) {
+            when {
+                isNonFatal(e) -> null
+                else -> throw e
+            }
+        }
 }

@@ -20,6 +20,7 @@ plugins {
 
 group 'io.angstrom'
 version '0.0.1-SNAPSHOT'
+def projectDescription = 'A collection of Kotlin utilities.'
 
 tasks.named('jar') {
     manifest {
@@ -83,7 +84,7 @@ publishing {
             }
             pom {
                 name = rootProject.name
-                description = 'A collection of Kotlin utilities.'
+                description = projectDescription
                 url = 'https://angstrom.io/github/angstromio/angstromio-util/'
                 licenses {
                     license {
