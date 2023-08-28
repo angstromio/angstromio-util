@@ -46,7 +46,6 @@ tasks.named('jar') {
 }
 
 repositories {
-    mavenLocal()
     // Use Maven Central for resolving dependencies.
     mavenCentral()
 }
@@ -103,7 +102,6 @@ publishing {
         }
     }
     repositories {
-        mavenLocal()
         mavenCentral()
     }
 }
