@@ -4,4 +4,4 @@ plugins {
 }
 
 rootProject.name = 'angstromio-util'
-include 'lib'
+include 'util-lib'
