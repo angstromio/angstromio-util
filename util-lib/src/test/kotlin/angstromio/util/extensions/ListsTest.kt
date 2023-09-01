@@ -1,12 +1,14 @@
 package angstromio.util.extensions
 
+import angstromio.util.extensions.Lists.head
+import angstromio.util.extensions.Lists.tail
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.beNull
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 
-class ListOpsTest : FunSpec({
+class ListsTest : FunSpec({
     test("ListOps#head") {
         val l1 = listOf(1, 2, 3)
         l1.head()!! shouldBeEqual 1

@@ -1,11 +1,17 @@
 package angstromio.util.extensions
 
+import angstromio.util.extensions.Strings.toCamelCase
+import angstromio.util.extensions.Strings.toPascalCase
+import angstromio.util.extensions.Strings.toSnakeCase
 import io.kotest.core.spec.style.FunSpec
 import java.util.*
 
-class StringOpsTest : FunSpec({
+class StringsTest : FunSpec({
 
     test("StringOps#snakeCase") {
+        // return a null if given null
+        assert(null.toSnakeCase() == null)
+
         assert("FooBar".toSnakeCase() == "foo_bar")
 
         assert("MyCamelCase".toSnakeCase() == "my_camel_case")
@@ -40,9 +46,8 @@ class StringOpsTest : FunSpec({
         assert("_foo_bar_".toPascalCase() == "FooBar")
         assert("a_b_c_d".toPascalCase() == "ABCD")
 
-        // return an empty string if given null
-        assert(null.toPascalCase() == "")
-        assert(null.toPascalCase().isEmpty())
+        // return a null if given null
+        assert(null.toPascalCase() == null)
         // leave a CamelCased name untouched
         assert("NeatFeet".toPascalCase() == "NeatFeet")
         assert("FooBar".toPascalCase() == "FooBar")
@@ -60,9 +65,8 @@ class StringOpsTest : FunSpec({
         assert("_foo_bar_".toCamelCase() == "fooBar")
         assert("a_b_c_d".toCamelCase() == "aBCD")
 
-        // return an empty string if given null
-        assert(null.toCamelCase() == "")
-        assert(null.toCamelCase().isEmpty())
+        // return a null  if given null
+        assert(null.toCamelCase() == null)
         assert("GetTweets".toCamelCase() == "getTweets")
         assert("FooBar".toCamelCase() == "fooBar")
         assert("HTML".toCamelCase() == "hTML")
@@ -73,10 +77,10 @@ class StringOpsTest : FunSpec({
     test("StringOps#toPascalCase & toCamelCase Method function") {
         val name = "emperor_norton"
         // test that the first letter for toCamelCase is lower-cased
-        assert(name.toCamelCase().toList()[0].isLowerCase())
+        name.toCamelCase()?.toList()?.get(0)?.isLowerCase()?.let { assert(it) }
         // test that toPascalCase and toCamelCase.capitalize are the same
         assert(name.toPascalCase() ==
-                StringOps.toCamelCase(name).replaceFirstChar {
+                name.toCamelCase()?.replaceFirstChar {
                     if (it.isLowerCase()) it.titlecase(
                         Locale.getDefault()
                     ) else it.toString()

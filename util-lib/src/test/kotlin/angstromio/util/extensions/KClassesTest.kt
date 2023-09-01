@@ -7,6 +7,7 @@ import angstromio.util.Annotation4
 import angstromio.util.StaticSecondaryConstructor
 import angstromio.util.WithSecondaryConstructor
 import angstromio.util.WithThings
+import angstromio.util.extensions.KClasses.getConstructor
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.be
 import io.kotest.matchers.equals.shouldBeEqual
@@ -18,7 +19,7 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.javaType
 
 @OptIn(ExperimentalStdlibApi::class)
-class KClassOpsTest : FunSpec({
+class KClassesTest : FunSpec({
 
     test("KClassOps#getConstructor") {
         val constructor: KFunction<*>? = StaticSecondaryConstructor::class.getConstructor(Int::class, Int::class)

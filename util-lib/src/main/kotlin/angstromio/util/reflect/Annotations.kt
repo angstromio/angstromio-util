@@ -1,6 +1,6 @@
 package angstromio.util.reflect
 
-import angstromio.util.extensions.getConstructor
+import angstromio.util.extensions.KClasses.getConstructor
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import java.lang.reflect.Field
