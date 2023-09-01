@@ -29,7 +29,7 @@ object ClasspathResource {
     fun load(name: String): InputStream? = when (val inputStream = javaClass.getResourceAsStream(absolutePath(name))) {
         null -> null
         else -> {
-            val bufferedInputStream = BufferedInputStream (inputStream)
+            val bufferedInputStream = BufferedInputStream(inputStream)
             if (bufferedInputStream.available() > 0) {
                 bufferedInputStream
             } else {

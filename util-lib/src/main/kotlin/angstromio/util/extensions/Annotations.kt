@@ -12,7 +12,15 @@ import kotlin.reflect.KClass
  *
  * @return true if this [Annotation] is of type [A], false otherwise.
  */
-public inline fun <reified A : Annotation> Annotation.eq(): Boolean = Annotations.eq<A>(this)
+inline fun <reified A : Annotation> Annotation.eq(): Boolean = Annotations.eq<A>(this)
+
+/**
+ * Determines if this [Annotation] is NOT an annotation type of the given type param.
+ * @param A the type to match against.
+ *
+ * @return true if this [Annotation] is of type [A], false otherwise.
+ */
+inline fun <reified A : Annotation> Annotation.notEq(): Boolean = !Annotations.eq<A>(this)
 
 /**
  * Attempts to return the result of invoking `method()` of this [Annotation] which SHOULD be
@@ -25,7 +33,7 @@ public inline fun <reified A : Annotation> Annotation.eq(): Boolean = Annotation
  *
  * @return the result of invoking `annotation#method()` or null.
  */
-public inline fun <reified  A : Annotation> Annotation.getValueIfAnnotatedWith(method: String = "value"): String? =
+inline fun <reified A : Annotation> Annotation.getValueIfAnnotatedWith(method: String = "value"): String? =
     Annotations.getValueIfAnnotatedWith<A>(this, method)
 
 /**
@@ -35,7 +43,7 @@ public inline fun <reified  A : Annotation> Annotation.getValueIfAnnotatedWith(m
  *
  * @return the result of invoking `annotation#method()` or None.
  */
-public fun Annotation.getValue(method: String = "value"): String? = Annotations.getValue(this, method)
+fun Annotation.getValue(method: String = "value"): String? = Annotations.getValue(this, method)
 
 /**
  * Determines if this [Annotation] is annotated by an [Annotation] of the given
@@ -45,7 +53,7 @@ public fun Annotation.getValue(method: String = "value"): String? = Annotations.
  * @return true if this [Annotation] is annotated with an [Annotation] of type A,
  *         false otherwise.
  */
-public inline fun <reified ToFindAnnotation : Annotation> Annotation.isAnnotationPresent() =
+inline fun <reified ToFindAnnotation : Annotation> Annotation.isAnnotationPresent() =
     Annotations.isAnnotationPresent<ToFindAnnotation>(this)
 
 /**
@@ -54,7 +62,7 @@ public inline fun <reified ToFindAnnotation : Annotation> Annotation.isAnnotatio
  *
  * @return the matching [Annotation] instance if found, otherwise null.
  */
-public fun List<Annotation>.find(target: KClass<out Annotation>): Annotation? = Annotations.findAnnotation(this, target)
+fun List<Annotation>.find(target: KClass<out Annotation>): Annotation? = Annotations.findAnnotation(this, target)
 
 /**
  * Find the given target [Annotation] denoted by type [A] within this list of annotations.
@@ -62,7 +70,7 @@ public fun List<Annotation>.find(target: KClass<out Annotation>): Annotation? = 
  *
  * @return the matching [Annotation] instance if found, otherwise null.
  */
-public inline fun <reified A: Annotation> List<Annotation>.find(): Annotation? = Annotations.findAnnotation<A>(this)
+inline fun <reified A : Annotation> List<Annotation>.find(): Annotation? = Annotations.findAnnotation<A>(this)
 
 /**
  * Filter this list of annotations discriminated on whether they are annotated with the annotation denoted by type [A].
@@ -70,7 +78,7 @@ public inline fun <reified A: Annotation> List<Annotation>.find(): Annotation? =
  *
  * @return the filtered list of matching annotations.
  */
-public inline fun <reified A : Annotation> List<Annotation>.filter(): List<Annotation> =
+inline fun <reified A : Annotation> List<Annotation>.filter(): List<Annotation> =
     Annotations.filter<A>(this)
 
 /**
@@ -79,5 +87,5 @@ public inline fun <reified A : Annotation> List<Annotation>.filter(): List<Annot
  *
  * @return the filtered list of matching annotations.
  */
-public fun List<Annotation>.filter(predicate: Set<KClass<out Annotation>>): List<Annotation> =
+fun List<Annotation>.filter(predicate: Set<KClass<out Annotation>>): List<Annotation> =
     Annotations.filter(this, predicate)

@@ -8,15 +8,21 @@ import java.nio.file.Path
  * Test mixin that creates a temporary thread-local folder for a block of code to execute in.
  * The folder is recursively deleted after the test.
  *
- * Note that multiple uses of TempFolder cannot be nested, because the temporary directory
+ * Note that multiple uses of [TempFolder] cannot be nested, because the temporary directory
  * is effectively a thread-local global.
+ *
+ * Usage is typically through the [InitializedTempFolder] delegate (which initializes the ThreadLocal), e.g.
+ *
+ *      class MyClass : SomeParent(), TempFolder by InitializedTempFolder() {
+ *          ...
+ *      }
  *
  * @note based on [com.twitter.io.TempFolder](https://github.com/twitter/util/blob/develop/util-core/src/main/scala/com/twitter/io/TempFolder.scala)
  */
 interface TempFolder {
 
     val _folderName: ThreadLocal<File>
-        get() = ThreadLocal()
+        get() = ThreadLocal<File>()
 
     /**
      * Runs the given block of code with the presence of a temporary folder whose name can be

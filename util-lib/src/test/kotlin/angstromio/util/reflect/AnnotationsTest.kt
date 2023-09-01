@@ -216,8 +216,8 @@ class AnnotationsTest : FunSpec() {
             Annotations.getValue(annotation4) should beNull()
 
             val clazzFiveAnnotationsMap = ClassFive::class.getConstructorAnnotations()
-            val clazzFiveAnnotations = clazzFiveAnnotationsMap.flatMap {
-                (_, annotations) -> annotations.toList()
+            val clazzFiveAnnotations = clazzFiveAnnotationsMap.flatMap { (_, annotations) ->
+                annotations.toList()
             }
             val annotation5 =
                 clazzFiveAnnotations.find<Annotation5>()!!
@@ -320,7 +320,7 @@ class AnnotationsTest : FunSpec() {
 
         test("Annotations#secondaryConstructor 5") {
             val annotationMap: Map<String, List<Annotation>> =
-            Annotations.getConstructorAnnotations(StaticSecondaryConstructorWithMethodAnnotation::class)
+                Annotations.getConstructorAnnotations(StaticSecondaryConstructorWithMethodAnnotation::class)
             annotationMap.isEmpty() should be(false)
             annotationMap.size shouldBeEqual 2
             annotationMap["one"]!!.size shouldBeEqual 1
@@ -344,7 +344,7 @@ class AnnotationsTest : FunSpec() {
 
         test("Annotations#secondaryConstructor 6") {
             val annotationMap: Map<String, List<Annotation>> =
-            Annotations.getConstructorAnnotations(StaticSecondaryConstructorWithMethodAnnotation::class)
+                Annotations.getConstructorAnnotations(StaticSecondaryConstructorWithMethodAnnotation::class)
 
             annotationMap.isEmpty() should be(false)
             annotationMap.size shouldBeEqual 2
@@ -388,7 +388,12 @@ class AnnotationsTest : FunSpec() {
 
         test("Annotations#generic types 1") {
             val annotationMap: Map<String, List<Annotation>> =
-                GenericTestClassWithMultipleArgs::class.getConstructorAnnotations(listOf(Object::class, Int::class)) // generic types resolve to Object
+                GenericTestClassWithMultipleArgs::class.getConstructorAnnotations(
+                    listOf(
+                        Object::class,
+                        Int::class
+                    )
+                ) // generic types resolve to Object
 
             annotationMap.isEmpty() should be(false)
             annotationMap.size shouldBeEqual 2

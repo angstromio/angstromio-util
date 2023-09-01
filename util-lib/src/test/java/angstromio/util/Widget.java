@@ -10,6 +10,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
 public @interface Widget {
 
-    /** Name of the widget */
+    /**
+     * Name of the widget
+     */
     String value() default "widget";
 }

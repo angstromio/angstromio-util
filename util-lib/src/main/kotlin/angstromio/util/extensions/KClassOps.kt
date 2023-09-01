@@ -38,7 +38,7 @@ import kotlin.reflect.jvm.kotlinFunction
  *         not returned.
  * @see [Annotations.getConstructorAnnotations]]
  */
-public fun KClass<*>.getConstructorAnnotations(parameterTypes: List<KClass<*>> = emptyList()): Map<String, List<Annotation>> =
+fun KClass<*>.getConstructorAnnotations(parameterTypes: List<KClass<*>> = emptyList()): Map<String, List<Annotation>> =
     Annotations.getConstructorAnnotations(this, parameterTypes)
 
 /**
@@ -49,7 +49,7 @@ public fun KClass<*>.getConstructorAnnotations(parameterTypes: List<KClass<*>> =
  * @note this will ALSO search companion objects for an appropriate 'invoke' method if a suitable constructor cannot
  *       be found on the class.
  */
-public fun KClass<*>.getConstructor(vararg parameterTypes: KClass<*>): KFunction<*>? =
+fun KClass<*>.getConstructor(vararg parameterTypes: KClass<*>): KFunction<*>? =
     KClassOps.getConstructor(this, listOf(*parameterTypes))
 
 /**
@@ -60,7 +60,7 @@ public fun KClass<*>.getConstructor(vararg parameterTypes: KClass<*>): KFunction
  * @note this will ALSO search companion objects for an appropriate 'invoke' method if a suitable constructor cannot
  *       be found on the class.
  */
-public fun KClass<*>.getConstructor(parameterTypes: List<KClass<*>>): KFunction<*>? =
+fun KClass<*>.getConstructor(parameterTypes: List<KClass<*>>): KFunction<*>? =
     KClassOps.getConstructor(this, parameterTypes)
 
 object KClassOps {
@@ -69,7 +69,7 @@ object KClassOps {
         return try {
             clazz.java.getConstructor(*(parameterTypes.map { it.java }).toTypedArray()).kotlinFunction
         } catch (e: NoSuchMethodException) {
-           // try to find an 'invoke' function on companion
+            // try to find an 'invoke' function on companion
             clazz.companionObject?.declaredFunctions?.find { kFunction ->
                 kFunction.name == "invoke" && matchParameters(kFunction.parameters, parameterTypes)
             }
@@ -79,7 +79,9 @@ object KClassOps {
     // match the VALUE KParameter types in order to the given Array of KClass types
     private fun matchParameters(kParameters: List<KParameter>, parameterTypes: List<KClass<*>>): Boolean {
         val parameters = kParameters.filter { it.kind == KParameter.Kind.VALUE }.map { it.type.javaType }
-        return if (parameters.size != parameterTypes.size) { false } else {
+        return if (parameters.size != parameterTypes.size) {
+            false
+        } else {
             parameters.mapIndexed { index, parameter ->
                 val parameterType = parameterTypes[index]
                 parameter.typeName == parameterType.starProjectedType.javaType.typeName

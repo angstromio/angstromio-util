@@ -2,9 +2,9 @@
 
 package angstromio.util.extensions
 
-public fun <T : Any> List<T>?.head(): T? = ListOps.head(this)
+fun <T : Any> List<T>?.head(): T? = ListOps.head(this)
 
-public fun <T : Any> List<T>?.tail(): List<T>? = ListOps.tail(this)
+fun <T : Any> List<T>?.tail(): List<T>? = ListOps.tail(this)
 
 object ListOps {
 

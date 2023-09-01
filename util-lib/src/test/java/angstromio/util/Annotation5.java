@@ -8,6 +8,8 @@ import java.lang.annotation.Target;
 @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Annotation5 {
-    /** A value */
+    /**
+     * A value
+     */
     String discriminator() default "annotation5";
 }

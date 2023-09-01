@@ -97,7 +97,8 @@ class KClassOpsTest : FunSpec({
     }
 
     test("KClassOps#getConstructorAnnotations 4") {
-        val annotationMap: Map<String, List<Annotation>> = WithSecondaryConstructor::class.getConstructorAnnotations(listOf(String::class, String::class))
+        val annotationMap: Map<String, List<Annotation>> =
+            WithSecondaryConstructor::class.getConstructorAnnotations(listOf(String::class, String::class))
 
         annotationMap.isEmpty() should be(false)
         annotationMap.size shouldBeEqual 2

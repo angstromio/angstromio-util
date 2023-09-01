@@ -9,17 +9,17 @@ package angstromio.util.extensions
  *      s == toCamelCase(toSnakeCase(s))
  *
  */
-public fun String?.toSnakeCase(): String = StringOps.toSnakeCase(this ?: "")
+fun String?.toSnakeCase(): String = StringOps.toSnakeCase(this ?: "")
 
 /**
  * Turns a string of format "foo_bar" into PascalCase "FooBar"
  */
-public fun String?.toPascalCase(): String = StringOps.toPascalCase(this ?: "")
+fun String?.toPascalCase(): String = StringOps.toPascalCase(this ?: "")
 
 /**
  * Turn a string of format "foo_bar" into camelCase with the first letter in lower case: "fooBar"
  */
-public fun String?.toCamelCase(): String = StringOps.toCamelCase(this ?: "")
+fun String?.toCamelCase(): String = StringOps.toCamelCase(this ?: "")
 
 object StringOps {
     private val SnakeCaseRegexFirstPass = """([A-Z]+)([A-Z][a-z])""".toRegex()

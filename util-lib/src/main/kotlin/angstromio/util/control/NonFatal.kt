@@ -3,7 +3,7 @@ package angstromio.util.control
 object NonFatal {
 
     fun isNonFatal(t: Throwable): Boolean {
-        return when(t) {
+        return when (t) {
             is VirtualMachineError -> false
             is ThreadDeath -> false
             is InterruptedException -> false
@@ -12,7 +12,7 @@ object NonFatal {
         }
     }
 
-    inline fun <reified T: Any> tryOrNull(f: () -> T?) =
+    inline fun <reified T : Any> tryOrNull(f: () -> T?) =
         try {
             f()
         } catch (e: Exception) {

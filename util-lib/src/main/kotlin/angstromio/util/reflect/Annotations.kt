@@ -3,7 +3,6 @@ package angstromio.util.reflect
 import angstromio.util.extensions.getConstructor
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
-import java.lang.IllegalArgumentException
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import kotlin.reflect.KCallable
@@ -218,7 +217,11 @@ object Annotations {
             val message = if (parameterTypes.isEmpty()) {
                 "Unable to locate a primary no-arg constructor for class '${clazz.qualifiedName}'."
             } else {
-                "Unable to locate a constructor for '${clazz.qualifiedName}' with parameter types: [${parameterTypes.joinToString(", ")}]"
+                "Unable to locate a constructor for '${clazz.qualifiedName}' with parameter types: [${
+                    parameterTypes.joinToString(
+                        ", "
+                    )
+                }]"
             }
             throw IllegalArgumentException(message)
         }

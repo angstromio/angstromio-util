@@ -10,6 +10,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
 @MarkerAnnotation
 public @interface Thing {
-    /** Name of the thing */
+    /**
+     * Name of the thing
+     */
     String value() default "thing";
 }

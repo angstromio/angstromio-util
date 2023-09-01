@@ -9,6 +9,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @MarkerAnnotation
 public @interface Annotation3 {
-    /** A value */
+    /**
+     * A value
+     */
     String value() default "annotation3";
 }
