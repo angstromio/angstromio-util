@@ -109,9 +109,9 @@ publishing {
                 }
                 developers {
                     developer {
-                        id = 'cacoco'
-                        name = 'Christopher Coco'
-                        email = 'cacoco@angstrom.io'
+                        id = 'angstromio'
+                        name = 'ångström.io'
+                        email = 'github@angstrom.io'
                     }
                 }
                 scm {
