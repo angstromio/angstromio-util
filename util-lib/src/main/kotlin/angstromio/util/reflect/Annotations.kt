@@ -193,6 +193,20 @@ object Annotations {
         return found
     }
 
+    /** We repeat for an Array type to not have to bounce through conversion of Array to a list when it does not matter for the logic remains the same */
+    inline fun <reified A : Annotation> findAnnotation(annotations: Array<Annotation>): A? {
+        val size = annotations.size
+        val annotationType = A::class.java
+        var found: A? = null
+        var index = 0
+        while (found == null && index < size) {
+            val annotation = annotations[index]
+            if (annotation.annotationClass.java == annotationType) found = annotation as A
+            index += 1
+        }
+        return found
+    }
+
     /**
      * Determines if the given [Annotation] is an annotation type of the given type param.
      * @param A the type to match against.
