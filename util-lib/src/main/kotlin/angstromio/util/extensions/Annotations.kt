@@ -4,11 +4,10 @@
 package angstromio.util.extensions
 
 import angstromio.util.reflect.Annotations
-import kotlin.reflect.KClass
 
 /**
  * Attempts to map fields to array of annotations. This method scans the constructor and
- * then all declared fields in order to build up the mapping of field name to [List<java.lang.Annotation>].
+ * then all declared fields in order to build up the mapping of field name to [Array<java.lang.Annotation>].
  * When the given class has a single constructor, that constructor will be used. Otherwise, the
  * given parameter types are used to locate a constructor.
  * Steps:
@@ -32,7 +31,7 @@ import kotlin.reflect.KClass
  *         not returned.
  * @see [Annotations.getConstructorAnnotations]]
  */
-fun KClass<*>.getConstructorAnnotations(parameterTypes: List<KClass<*>> = emptyList()): Map<String, List<Annotation>> =
+fun Class<*>.getConstructorAnnotations(parameterTypes: Array<Class<*>> = emptyArray<Class<*>>()): Map<String, List<Annotation>> =
     Annotations.getConstructorAnnotations(this, parameterTypes)
 
 /**
@@ -91,7 +90,10 @@ inline fun <reified ToFindAnnotation : Annotation> Annotation.isAnnotationPresen
  *
  * @return the matching [Annotation] instance if found, otherwise null.
  */
-fun List<Annotation>.find(target: KClass<out Annotation>): Annotation? = Annotations.findAnnotation(this, target)
+fun Array<Annotation>.find(target: Class<out Annotation>): Annotation? = Annotations.findAnnotation(this, target)
+
+/** Repeat for List type */
+fun List<Annotation>.find(target: Class<out Annotation>): Annotation? = Annotations.findAnnotation(this, target)
 
 /**
  * Find the given target [Annotation] denoted by type [A] within this list of annotations.
@@ -99,6 +101,9 @@ fun List<Annotation>.find(target: KClass<out Annotation>): Annotation? = Annotat
  *
  * @return the matching [Annotation] instance if found, otherwise null.
  */
+inline fun <reified A : Annotation> Array<Annotation>.find(): Annotation? = Annotations.findAnnotation<A>(this)
+
+/** Repeat for List type */
 inline fun <reified A : Annotation> List<Annotation>.find(): Annotation? = Annotations.findAnnotation<A>(this)
 
 /**
@@ -107,6 +112,10 @@ inline fun <reified A : Annotation> List<Annotation>.find(): Annotation? = Annot
  *
  * @return the filtered list of matching annotations.
  */
+inline fun <reified A : Annotation> Array<Annotation>.filter(): List<Annotation> =
+    Annotations.filter<A>(this)
+
+/** Repeat for List type */
 inline fun <reified A : Annotation> List<Annotation>.filter(): List<Annotation> =
     Annotations.filter<A>(this)
 
@@ -116,5 +125,9 @@ inline fun <reified A : Annotation> List<Annotation>.filter(): List<Annotation> 
  *
  * @return the filtered list of matching annotations.
  */
-fun List<Annotation>.filter(predicate: Set<KClass<out Annotation>>): List<Annotation> =
+fun Array<Annotation>.filter(predicate: Set<Class<out Annotation>>): List<Annotation> =
+    Annotations.filter(this, predicate)
+
+/** Repeat for List type */
+fun List<Annotation>.filter(predicate: Set<Class<out Annotation>>): List<Annotation> =
     Annotations.filter(this, predicate)

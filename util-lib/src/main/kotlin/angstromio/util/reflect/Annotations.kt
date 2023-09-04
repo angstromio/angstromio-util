@@ -8,10 +8,31 @@ import java.lang.reflect.Method
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
+//import kotlin.reflect.KClass
+//import kotlin.reflect.KParameter
 import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.javaConstructor
 
 object Annotations {
-    private data class ConstructorAnnotationCacheKey(val clazz: KClass<*>, val parameterTypes: List<KClass<*>>)
+    private data class ConstructorAnnotationCacheKey(val clazz: Class<*>, val parameterTypes: Array<Class<*>>) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as ConstructorAnnotationCacheKey
+
+            if (clazz != other.clazz) return false
+            if (!parameterTypes.contentEquals(other.parameterTypes)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = clazz.hashCode()
+            result = 31 * result + parameterTypes.contentHashCode()
+            return result
+        }
+    }
 
     private const val DEFAULT_CACHE_SIZE: Long = 1024
 
@@ -52,25 +73,40 @@ object Annotations {
         A::class.java.isAnnotationPresent(ToFindAnnotation::class.java as Class<Annotation>)
 
     /**
-     * Filters a list of annotations discriminated on whether they are annotated with any from the set of given annotations.
+     * Filters a array of annotations discriminated on whether they are annotated with any from the set of given annotations.
      * @param predicate the Set of [Annotation] classes by which to filter.
-     * @param annotations the list [Annotation] instances to filter.
+     * @param annotations the array [Annotation] instances to filter.
      *
-     * @return the filtered list of matching annotations.
+     * @return the filtered array of matching annotations.
      */
     fun filter(
-        annotations: List<Annotation>,
-        predicate: Set<KClass<out Annotation>>
+        annotations: Array<Annotation>,
+        predicate: Set<Class<out Annotation>>
     ): List<Annotation> =
-        annotations.filter { annotation: Annotation -> predicate.contains(annotation.annotationClass) }
+        annotations.filter { annotation: Annotation ->
+            predicate.contains(annotation.annotationClass.java)
+        }
+
+    /** Repeat for List type */
+    fun filter(
+        annotations: List<Annotation>,
+        predicate: Set<Class<out Annotation>>
+    ): List<Annotation> =
+        annotations.filter { annotation: Annotation ->
+            predicate.contains(annotation.annotationClass.java)
+        }
 
     /**
-     * Filter a list of annotations discriminated on whether they are annotated with the annotation denoted by type [A].
+     * Filter a array of annotations discriminated on whether they are annotated with the annotation denoted by type [A].
      * @param A the type of the annotation by which to filter.
-     * @param annotations the list of [Annotation] instances to filter.
+     * @param annotations the array of [Annotation] instances to filter.
      *
-     * @return the filtered list of matching annotations.
+     * @return the filtered array of matching annotations.
      */
+    inline fun <reified A : Annotation> filter(annotations: Array<Annotation>): List<Annotation> =
+        annotations.filter { ann -> isAnnotationPresent<A>(ann) }
+
+    /** Repeat for List type */
     inline fun <reified A : Annotation> filter(annotations: List<Annotation>): List<Annotation> =
         annotations.filter { ann -> isAnnotationPresent<A>(ann) }
 
@@ -119,7 +155,7 @@ object Annotations {
 
     /**
      * Attempts to map fields to array of annotations. This method scans the constructor and
-     * then all declared fields in order to build up the mapping of field name to [List<java.lang.Annotation>].
+     * then all declared fields in order to build up the mapping of field name to [Array<java.lang.Annotation>].
      * When the given class has a single constructor, that constructor will be used. Otherwise, the
      * given parameter types are used to locate a constructor.
      * Steps:
@@ -131,7 +167,7 @@ object Annotations {
      *     super interface methods which are implemented by declared fields in the given class in order
      *     to locate inherited annotations for the declared field.
      * @param clazz the `KClass` to inspect. This should represent a Kotlin data class.
-     * @param parameterTypes an optional list of parameter class types in order to locate the appropriate
+     * @param parameterTypes an optional array of parameter class types in order to locate the appropriate
      *                       data class constructor when the class has multiple constructors. If a class
      *                       has multiple constructors and parameter types are not specified, an
      *                       [IllegalArgumentException] is thrown. Likewise, if a suitable constructor
@@ -145,42 +181,57 @@ object Annotations {
      *       be found on the class.
      */
     fun getConstructorAnnotations(
-        clazz: KClass<*>,
-        parameterTypes: List<KClass<*>> = emptyList()
+        clazz: Class<*>,
+        parameterTypes: Array<Class<*>> = emptyArray<Class<*>>()
     ): Map<String, List<Annotation>> =
         ConstructorAnnotationCache.get(ConstructorAnnotationCacheKey(clazz, parameterTypes)) { key ->
-            findConstructorAnnotations(key.clazz, key.parameterTypes)
+            findConstructorAnnotations(key.clazz.kotlin, key.parameterTypes.map { it.kotlin })
         }
 
     /**
-     * Find the given target [Annotation] within a given list of annotations.
+     * Find the given target [Annotation] within a given array of annotations.
      * @param target the class of the [Annotation] to find.
-     * @param annotations the list of [Annotation] instances to search.
+     * @param annotations the array of [Annotation] instances to search.
      *
      * @return the matching [Annotation] instance if found, otherwise null.
      */
     fun findAnnotation(
-        annotations: List<Annotation>,
-        target: KClass<out Annotation>
+        annotations: Array<Annotation>,
+        target: Class<out Annotation>
     ): Annotation? {
         var found: Annotation? = null
         var index = 0
         while (index < annotations.size && found == null) {
             val annotation = annotations[index]
-            if (annotation.annotationClass == target) found = annotation
+            if (annotation.annotationClass.java == target) found = annotation
+            index += 1
+        }
+        return found
+    }
+
+    /** Repeat for List type */
+    fun findAnnotation(
+        annotations: List<Annotation>,
+        target: Class<out Annotation>
+    ): Annotation? {
+        var found: Annotation? = null
+        var index = 0
+        while (index < annotations.size && found == null) {
+            val annotation = annotations[index]
+            if (annotation.annotationClass.java == target) found = annotation
             index += 1
         }
         return found
     }
 
     /**
-     * Find the given target [Annotation] denoted by type [A] within a given list of annotations.
+     * Find the given target [Annotation] denoted by type [A] within a given array of annotations.
      * @param A the type of the [Annotation] to find.
-     * @param annotations the list of [Annotation] instances to search.
+     * @param annotations the array of [Annotation] instances to search.
      *
      * @return the matching [Annotation] instance if found, otherwise null.
      */
-    inline fun <reified A : Annotation> findAnnotation(annotations: List<Annotation>): A? {
+    inline fun <reified A : Annotation> findAnnotation(annotations: Array<Annotation>): A? {
         val size = annotations.size
         val annotationType = A::class.java
         var found: A? = null
@@ -193,8 +244,8 @@ object Annotations {
         return found
     }
 
-    /** We repeat for an Array type to not have to bounce through conversion of Array to a list when it does not matter for the logic remains the same */
-    inline fun <reified A : Annotation> findAnnotation(annotations: Array<Annotation>): A? {
+    /** Repeat for List type */
+    inline fun <reified A : Annotation> findAnnotation(annotations: List<Annotation>): A? {
         val size = annotations.size
         val annotationType = A::class.java
         var found: A? = null
@@ -232,7 +283,7 @@ object Annotations {
                 "Unable to locate a primary no-arg constructor for class '${clazz.qualifiedName}'."
             } else {
                 "Unable to locate a constructor for '${clazz.qualifiedName}' with parameter types: [${
-                    parameterTypes.joinToString(
+                    parameterTypes.map { it.java }.joinToString(
                         ", "
                     )
                 }]"

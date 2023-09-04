@@ -93,7 +93,7 @@ class KClassesTest : FunSpec({
     }
 
     test(" KClasses#getConstructorAnnotations") {
-        val found: Map<String, List<Annotation>> = WithThings::class.getConstructorAnnotations()
+        val found: Map<String, List<Annotation>> = WithThings::class.java.getConstructorAnnotations()
         found.isEmpty() should be(false)
         val annotations = found.flatMap { (_, annotations) -> annotations.toList() }
         annotations.size shouldBeEqual 4
@@ -101,7 +101,7 @@ class KClassesTest : FunSpec({
 
     test(" KClasses#getConstructorAnnotations 2") {
         val annotationMap: Map<String, List<Annotation>> =
-            StaticSecondaryConstructor::class.getConstructorAnnotations(listOf(String::class, String::class))
+            StaticSecondaryConstructor::class.java.getConstructorAnnotations(arrayOf(String::class.java, String::class.java))
 
         annotationMap.isEmpty() should be(false)
         annotationMap.size shouldBeEqual 2
@@ -113,7 +113,7 @@ class KClassesTest : FunSpec({
 
     test(" KClasses#getConstructorAnnotations 3") {
         val annotationMap: Map<String, List<Annotation>> =
-            StaticSecondaryConstructor::class.getConstructorAnnotations(listOf(Int::class, Int::class))
+            StaticSecondaryConstructor::class.java.getConstructorAnnotations(arrayOf(Int::class.java, Int::class.java))
 
         annotationMap.isEmpty() should be(false)
         annotationMap.size shouldBeEqual 2
@@ -125,7 +125,7 @@ class KClassesTest : FunSpec({
 
     test(" KClasses#getConstructorAnnotations 4") {
         val annotationMap: Map<String, List<Annotation>> =
-            WithSecondaryConstructor::class.getConstructorAnnotations(listOf(String::class, String::class))
+            WithSecondaryConstructor::class.java.getConstructorAnnotations(arrayOf(String::class.java, String::class.java))
 
         annotationMap.isEmpty() should be(false)
         annotationMap.size shouldBeEqual 2
