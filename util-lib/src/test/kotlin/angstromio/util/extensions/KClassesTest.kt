@@ -4,6 +4,7 @@ import angstromio.util.Annotation1
 import angstromio.util.Annotation2
 import angstromio.util.Annotation3
 import angstromio.util.Annotation4
+import angstromio.util.NoSecondaryInvokeFunction
 import angstromio.util.StaticSecondaryConstructor
 import angstromio.util.WithSecondaryConstructor
 import angstromio.util.WithThings
@@ -81,6 +82,14 @@ class KClassesTest : FunSpec({
         parameters.all { parameter ->
             parameter.type.javaType == String::class.javaObjectType
         } should be(true)
+    }
+
+    test("KClasses#getConstructor - no static secondary invoke operator function") {
+        // can't locate a secondary invoke function
+        NoSecondaryInvokeFunction::class.getConstructor(Int::class, Int::class) should beNull()
+
+        // can locate the primary constructor
+        NoSecondaryInvokeFunction::class.getConstructor(String::class, String::class) shouldNot beNull()
     }
 
     test(" KClasses#getConstructorAnnotations") {

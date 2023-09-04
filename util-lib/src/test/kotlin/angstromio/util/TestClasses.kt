@@ -3,12 +3,23 @@
 
 package angstromio.util
 
+object MyObject
+
 class NoConstructor()
+
+class DontCreateMe private constructor() {}
 
 data class ClassOneTwo(@Annotation1 val one: String, @Annotation2 val two: String)
 data class ClassOneTwoWithFields(@Annotation1 val one: String, @Annotation2 val two: String) {
     val city: String = "San Francisco"
     val state: String = "California"
+}
+
+data class NoSecondaryInvokeFunction(val one: String, val two: String) {
+    companion object {
+        fun create(three: Int, four: Int): NoSecondaryInvokeFunction =
+            NoSecondaryInvokeFunction(three.toString(), four.toString())
+    }
 }
 
 data class ClassOneTwoWithAnnotatedField(@Annotation1 val one: String, @Annotation2 val two: String) {

@@ -1,5 +1,6 @@
 package angstromio.util.reflect
 
+import angstromio.util.AncestorWithAnnotations
 import angstromio.util.Annotation1
 import angstromio.util.Annotation2
 import angstromio.util.Annotation3
@@ -13,9 +14,11 @@ import angstromio.util.ClassOneTwoWithAnnotatedField
 import angstromio.util.ClassOneTwoWithFields
 import angstromio.util.ClassThreeFour
 import angstromio.util.ClassThreeFourAncestorOneTwo
+import angstromio.util.DontCreateMe
 import angstromio.util.GenericTestClass
 import angstromio.util.GenericTestClassWithMultipleArgs
 import angstromio.util.MarkerAnnotation
+import angstromio.util.MyObject
 import angstromio.util.NoConstructor
 import angstromio.util.StaticSecondaryConstructor
 import angstromio.util.StaticSecondaryConstructorWithMethodAnnotation
@@ -185,18 +188,23 @@ class AnnotationsTest : FunSpec() {
 
             // @Annotation1 is not annotated with @MarkerAnnotation
             annotation1.getValueIfAnnotatedWith<MarkerAnnotation>() should beNull()
+            Annotations.getValueIfAnnotatedWith<MarkerAnnotation>(annotation1) should beNull()
             // @Annotation2 is annotated with @MarkerAnnotation but does not define a value() method
             annotation2.getValueIfAnnotatedWith<MarkerAnnotation>() should beNull()
+            Annotations.getValueIfAnnotatedWith<MarkerAnnotation>(annotation2) should beNull()
 
             val things = annotations.filter(setOf(Thing::class))
             things.forEach { thing ->
                 thing.getValueIfAnnotatedWith<MarkerAnnotation>() shouldNot beNull()
+                Annotations.getValueIfAnnotatedWith<MarkerAnnotation>(thing) shouldNot beNull()
             }
 
             val fooThingAnnotation = Things.named("foo")
-            val result = fooThingAnnotation.getValueIfAnnotatedWith<MarkerAnnotation>()
-            result shouldNot beNull()
-            result!! shouldBeEqual "foo"
+            fooThingAnnotation.getValueIfAnnotatedWith<MarkerAnnotation>() should be("foo")
+            Annotations.getValueIfAnnotatedWith<MarkerAnnotation>(fooThingAnnotation) should be("foo")
+
+            // incorrect value function name
+            Annotations.getValueIfAnnotatedWith<MarkerAnnotation>(fooThingAnnotation, "values") should beNull()
         }
 
         test("Annotations#getValue") {
@@ -365,11 +373,42 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#no constructor should not fail") {
-            // we expressly want this to no-op rather than fail outright
-            val annotationMap: Map<String, List<Annotation>> =
-                NoConstructor::class.getConstructorAnnotations()
+            // we expressly want these to no-op rather than fail outright
+            NoConstructor::class.getConstructorAnnotations().isEmpty() should be(true)
+            DontCreateMe::class.getConstructorAnnotations().isEmpty() should be(true)
+        }
 
-            annotationMap.isEmpty() should be(true)
+        test("Annotations#getConstructorAnnotations - with incorrect parameter types") {
+            assertThrows<IllegalArgumentException> {
+                DontCreateMe::class.getConstructorAnnotations(listOf(String::class, String::class)).isEmpty() should be(true)
+            }
+            assertThrows<IllegalArgumentException> {
+                NoConstructor::class.getConstructorAnnotations(listOf(Int::class))
+            }
+        }
+
+        test("Annotations#getConstructorAnnotations - no constructor") {
+            val e = assertThrows<IllegalArgumentException> {
+                AncestorWithAnnotations::class.getConstructorAnnotations()
+            }
+            e.message should be("Unable to locate a primary no-arg constructor for class '${AncestorWithAnnotations::class.qualifiedName}'.")
+
+            val e1 = assertThrows<IllegalArgumentException> {
+                AncestorWithAnnotations::class.getConstructorAnnotations(listOf(String::class, Int::class))
+            }
+            e1.message should be("Unable to locate a constructor for '${AncestorWithAnnotations::class.qualifiedName}' with parameter types: [${
+                listOf(String::class, Int::class).joinToString(
+                    ", "
+                )
+            }]")
+
+            assertThrows<IllegalArgumentException> {
+                MyObject::class.getConstructorAnnotations()
+            }
+
+            assertThrows<IllegalArgumentException> {
+                MyObject::class.getConstructorAnnotations(listOf(Double::class))
+            }
         }
 
         test("Annotations#generic types") {

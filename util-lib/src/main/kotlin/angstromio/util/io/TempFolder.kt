@@ -32,9 +32,9 @@ interface TempFolder {
      */
     fun withTempFolder(f: () -> Any) {
         val tempFolder = System.getProperty("java.io.tmpdir")
-        var folder = File(tempFolder, "angstomio-test-" + System.currentTimeMillis())
+        var folder = File(tempFolder, "angstromio-test-" + System.currentTimeMillis())
         while (!folder.mkdir()) {
-            folder = File(tempFolder, "angstomio-test-" + System.currentTimeMillis())
+            folder = File(tempFolder, "angstromio-test-" + System.currentTimeMillis())
         }
         _folderName.set(folder)
 
