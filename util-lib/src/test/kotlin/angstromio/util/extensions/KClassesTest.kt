@@ -21,59 +21,76 @@ import kotlin.reflect.javaType
 @OptIn(ExperimentalStdlibApi::class)
 class KClassesTest : FunSpec({
 
-    test("KClassOps#getConstructor") {
+    test(" KClasses#getConstructor") {
         val constructor: KFunction<*>? = StaticSecondaryConstructor::class.getConstructor(Int::class, Int::class)
         constructor!! shouldNot beNull()
 
         // should be constructor (Int, Int)
         val parameters = constructor.parameters.filter { it.kind == KParameter.Kind.VALUE }
         parameters.all { parameter ->
-            parameter.type.javaType == Int::class.javaObjectType
-        }
+            parameter.type.javaType == Int::class.javaPrimitiveType
+        } should be(true)
     }
-
-    test("KClassOps#getConstructor - find secondary constructor") {
-        val constructor: KFunction<*>? = StaticSecondaryConstructor::class.getConstructor(String::class, String::class)
-        constructor!! shouldNot beNull()
-
+    
+    test("KClasses#getConstructor - find static secondary constructor using list of parameter types") {
+        val constructor = StaticSecondaryConstructor::class.getConstructor(listOf(String::class, String::class))
+        assert(constructor != null)
         // should be constructor (String, String)
-        val parameters = constructor.parameters.filter { it.kind == KParameter.Kind.VALUE }
+        val parameters = constructor!!.parameters.filter { it.kind == KParameter.Kind.VALUE }
         parameters.size shouldBeEqual 2
         parameters.all { parameter ->
             parameter.type.javaType == String::class.javaObjectType
-        }
+        } should be(true)
+
+        // try with incorrect parameter types list
+        StaticSecondaryConstructor::class.getConstructor(listOf(String::class, String::class, String::class)) should beNull()
     }
 
-    test("KClassOps#getConstructor 2") {
-        val constructor: KFunction<*>? = WithSecondaryConstructor::class.getConstructor(Int::class, Int::class)
-        constructor!! shouldNot beNull()
-
-        // should be constructor (Int, Int)
-        val parameters = constructor.parameters.filter { it.kind == KParameter.Kind.VALUE }
-        parameters.all { parameter ->
-            parameter.type.javaType == Int::class.javaObjectType
-        }
-    }
-
-    test("KClassOps#getConstructor - find secondary constructor 2") {
-        val constructor: KFunction<*>? = WithSecondaryConstructor::class.getConstructor(String::class, String::class)
-        constructor!! shouldNot beNull()
+    test(" KClasses#getConstructor - find static secondary constructor using vararg parameter types") {
+        val constructor: KFunction<*>? = StaticSecondaryConstructor::class.getConstructor(String::class, String::class)
+        assert(constructor != null)
 
         // should be constructor (String, String)
-        val parameters = constructor.parameters.filter { it.kind == KParameter.Kind.VALUE }
+        val parameters = constructor!!.parameters.filter { it.kind == KParameter.Kind.VALUE }
+        parameters.size shouldBeEqual 2
         parameters.all { parameter ->
             parameter.type.javaType == String::class.javaObjectType
-        }
+        } should be(true)
     }
 
-    test("KClassOps#getConstructorAnnotations") {
+    test(" KClasses#getConstructor - find primary constructor") {
+        val constructor: KFunction<*>? = WithSecondaryConstructor::class.getConstructor(Int::class, Int::class)
+        assert(constructor != null)
+
+        // should be constructor (Int, Int)
+        val parameters = constructor!!.parameters.filter { it.kind == KParameter.Kind.VALUE }
+        parameters.all { parameter ->
+            parameter.type.javaType == Int::class.javaPrimitiveType
+        } should be(true)
+
+        // try with incorrect parameter types varargs
+        WithSecondaryConstructor::class.getConstructor(Int::class, Int::class, Int::class) should beNull()
+    }
+
+    test(" KClasses#getConstructor - find secondary constructor 2") {
+        val constructor: KFunction<*>? = WithSecondaryConstructor::class.getConstructor(String::class, String::class)
+        assert(constructor != null)
+
+        // should be constructor (String, String)
+        val parameters = constructor!!.parameters.filter { it.kind == KParameter.Kind.VALUE }
+        parameters.all { parameter ->
+            parameter.type.javaType == String::class.javaObjectType
+        } should be(true)
+    }
+
+    test(" KClasses#getConstructorAnnotations") {
         val found: Map<String, List<Annotation>> = WithThings::class.getConstructorAnnotations()
         found.isEmpty() should be(false)
         val annotations = found.flatMap { (_, annotations) -> annotations.toList() }
         annotations.size shouldBeEqual 4
     }
 
-    test("KClassOps#getConstructorAnnotations 2") {
+    test(" KClasses#getConstructorAnnotations 2") {
         val annotationMap: Map<String, List<Annotation>> =
             StaticSecondaryConstructor::class.getConstructorAnnotations(listOf(String::class, String::class))
 
@@ -85,7 +102,7 @@ class KClassesTest : FunSpec({
         annotationMap["four"]!!.first().annotationClass shouldBeEqual Annotation4::class
     }
 
-    test("KClassOps#getConstructorAnnotations 3") {
+    test(" KClasses#getConstructorAnnotations 3") {
         val annotationMap: Map<String, List<Annotation>> =
             StaticSecondaryConstructor::class.getConstructorAnnotations(listOf(Int::class, Int::class))
 
@@ -97,7 +114,7 @@ class KClassesTest : FunSpec({
         annotationMap["two"]!!.first().annotationClass shouldBeEqual Annotation2::class
     }
 
-    test("KClassOps#getConstructorAnnotations 4") {
+    test(" KClasses#getConstructorAnnotations 4") {
         val annotationMap: Map<String, List<Annotation>> =
             WithSecondaryConstructor::class.getConstructorAnnotations(listOf(String::class, String::class))
 

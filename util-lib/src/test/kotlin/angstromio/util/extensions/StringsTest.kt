@@ -11,6 +11,8 @@ class StringsTest : FunSpec({
     test("StringOps#snakeCase") {
         // return a null if given null
         assert(null.toSnakeCase() == null)
+        // empty string
+        assert("".toSnakeCase() == "")
 
         assert("FooBar".toSnakeCase() == "foo_bar")
 
@@ -48,6 +50,8 @@ class StringsTest : FunSpec({
 
         // return a null if given null
         assert(null.toPascalCase() == null)
+        // empty string
+        assert("".toPascalCase() == "")
         // leave a CamelCased name untouched
         assert("NeatFeet".toPascalCase() == "NeatFeet")
         assert("FooBar".toPascalCase() == "FooBar")
@@ -67,6 +71,8 @@ class StringsTest : FunSpec({
 
         // return a null  if given null
         assert(null.toCamelCase() == null)
+        // empty string
+        assert("".toCamelCase() == "")
         assert("GetTweets".toCamelCase() == "getTweets")
         assert("FooBar".toCamelCase() == "fooBar")
         assert("HTML".toCamelCase() == "hTML")
