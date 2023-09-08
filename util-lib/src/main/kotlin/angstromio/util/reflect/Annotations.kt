@@ -1,47 +1,21 @@
 package angstromio.util.reflect
 
+import angstromio.util.extensions.Annotations.flattenToArray
+import angstromio.util.extensions.Annotations.merge
 import angstromio.util.extensions.KClasses.getConstructor
-import com.github.benmanes.caffeine.cache.Cache
-import com.github.benmanes.caffeine.cache.Caffeine
+import arrow.core.memoize
+import java.lang.reflect.AnnotatedParameterizedType
+import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import kotlin.reflect.KCallable
-import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
-//import kotlin.reflect.KClass
-//import kotlin.reflect.KParameter
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaConstructor
+import kotlin.reflect.jvm.javaMethod
 
 object Annotations {
-    private data class ConstructorAnnotationCacheKey(val clazz: Class<*>, val parameterTypes: Array<Class<*>>) {
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
 
-            other as ConstructorAnnotationCacheKey
-
-            if (clazz != other.clazz) return false
-            if (!parameterTypes.contentEquals(other.parameterTypes)) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = clazz.hashCode()
-            result = 31 * result + parameterTypes.contentHashCode()
-            return result
-        }
-    }
-
-    private const val DEFAULT_CACHE_SIZE: Long = 1024
-
-    // simple memoization of the constructor annotations for a KClass
-    private val ConstructorAnnotationCache: Cache<ConstructorAnnotationCacheKey, Map<String, List<Annotation>>> =
-        Caffeine
-            .newBuilder()
-            .maximumSize(DEFAULT_CACHE_SIZE)
-            .build()
 
     /**
      * Determines if the given [Annotation] is annotated by an [Annotation] of the given
@@ -73,7 +47,7 @@ object Annotations {
         A::class.java.isAnnotationPresent(ToFindAnnotation::class.java as Class<Annotation>)
 
     /**
-     * Filters a array of annotations discriminated on whether they are annotated with any from the set of given annotations.
+     * Filters an array of annotations discriminated on whether they are annotated with any from the set of given annotations.
      * @param predicate the Set of [Annotation] classes by which to filter.
      * @param annotations the array [Annotation] instances to filter.
      *
@@ -97,7 +71,7 @@ object Annotations {
         }
 
     /**
-     * Filter a array of annotations discriminated on whether they are annotated with the annotation denoted by type [A].
+     * Filter an array of annotations discriminated on whether they are annotated with the annotation denoted by type [A].
      * @param A the type of the annotation by which to filter.
      * @param annotations the array of [Annotation] instances to filter.
      *
@@ -166,7 +140,7 @@ object Annotations {
      *     the declared method is the same name of a declared field from step two. That is find only
      *     super interface methods which are implemented by declared fields in the given class in order
      *     to locate inherited annotations for the declared field.
-     * @param clazz the `KClass` to inspect. This should represent a Kotlin data class.
+     * @param clazz the `Class` to inspect.
      * @param parameterTypes an optional array of parameter class types in order to locate the appropriate
      *                       data class constructor when the class has multiple constructors. If a class
      *                       has multiple constructors and parameter types are not specified, an
@@ -180,13 +154,7 @@ object Annotations {
      * @note this will ALSO search companion objects for an appropriate 'invoke' method if a suitable constructor cannot
      *       be found on the class.
      */
-    fun getConstructorAnnotations(
-        clazz: Class<*>,
-        parameterTypes: Array<Class<*>> = emptyArray<Class<*>>()
-    ): Map<String, List<Annotation>> =
-        ConstructorAnnotationCache.get(ConstructorAnnotationCacheKey(clazz, parameterTypes)) { key ->
-            findConstructorAnnotations(key.clazz.kotlin, key.parameterTypes.map { it.kotlin })
-        }
+    val getConstructorAnnotations = ::findConstructorAnnotations.memoize()
 
     /**
      * Find the given target [Annotation] within a given array of annotations.
@@ -268,34 +236,58 @@ object Annotations {
     inline fun <reified A : Annotation> eq(annotation: Annotation): Boolean =
         annotation.annotationClass.java == A::class.java
 
+    /**
+     * Find all the annotations for the AnnotatedType.
+     *
+     * @return all annotations on the AnnotatedType. If the AnnotatedType is a AnnotatedParameterizedType, then all
+     * actual type argument annotations will be returned concatenated into a single Array<Annotation>.
+     */
+    val getAnnotatedTypeAnnotations = ::getAnnotatedTypeAnnotationsFn.memoize()
+    private fun getAnnotatedTypeAnnotationsFn(annotatedType: AnnotatedType): Array<Annotation> {
+        return when (annotatedType) {
+            is AnnotatedParameterizedType -> {
+                annotatedType.annotatedActualTypeArguments.map { it.annotations }.flattenToArray()
+            }
+
+            else ->
+                annotatedType.annotations
+        }
+    }
+
     private fun findConstructorAnnotations(
-        clazz: KClass<*>,
-        parameterTypes: List<KClass<*>>
-    ): Map<String, List<Annotation>> {
-        val clazzAnnotations = hashMapOf<String, List<Annotation>>()
+        clazz: Class<*>,
+        parameterTypes: Array<Class<*>>
+    ): Map<String, Array<Annotation>> {
+        val kClazz = clazz.kotlin
+
+        val clazzAnnotations = hashMapOf<String, Array<Annotation>>()
         val constructor = if (parameterTypes.isEmpty()) {
-            clazz.primaryConstructor
+            kClazz.primaryConstructor
         } else {
-            clazz.getConstructor(parameterTypes)
+            kClazz.getConstructor(*(parameterTypes.map { it.kotlin }.toTypedArray()))
         }
         if (constructor == null) {
             val message = if (parameterTypes.isEmpty()) {
-                "Unable to locate a primary no-arg constructor for class '${clazz.qualifiedName}'."
+                "Unable to locate a primary no-arg constructor for class '${clazz.name}'."
             } else {
-                "Unable to locate a constructor for '${clazz.qualifiedName}' with parameter types: [${
-                    parameterTypes.map { it.java }.joinToString(
+                "Unable to locate a constructor for '${clazz.name}' with parameter types: [${
+                    parameterTypes.joinToString(
                         ", "
                     )
                 }]"
             }
             throw IllegalArgumentException(message)
         }
-        val fields: List<KParameter> = constructor.parameters
-        val clazzConstructorAnnotations: List<List<Annotation>> =
-            constructor.parameters.map { it.annotations }
+        val parameters = constructor.parameters.filter { it.kind == KParameter.Kind.VALUE }
+        val clazzConstructorAnnotations: List<Array<Annotation>> = when {
+            constructor.javaMethod != null -> constructor.javaMethod!!.parameters.map { it.annotations }
+            constructor.javaConstructor != null -> constructor.javaConstructor!!.parameters.map { it.annotations }
+            else -> throw java.lang.IllegalArgumentException()
+        }
+
         var i = 0
-        while (i < fields.size) {
-            val field = fields[i]
+        while (i < parameters.size) {
+            val field = parameters[i]
             val fieldAnnotations = clazzConstructorAnnotations[i]
             if (fieldAnnotations.isNotEmpty()) {
                 clazzAnnotations[field.name!!] = fieldAnnotations
@@ -303,7 +295,7 @@ object Annotations {
             i += 1
         }
 
-        val declaredFields: Array<Field> = clazz.java.declaredFields
+        val declaredFields: Array<Field> = clazz.declaredFields
         var j = 0
         while (j < declaredFields.size) {
             val field = declaredFields[j]
@@ -311,9 +303,9 @@ object Annotations {
                 val existing = clazzAnnotations[field.name]
                 if (existing != null) {
                     // prefer field annotations over constructor annotation
-                    mergeAnnotations(field.annotations.toList(), existing)
+                    clazzAnnotations[field.name] = field.annotations.merge(existing)
                 } else {
-                    clazzAnnotations[field.name] = field.annotations.toList()
+                    clazzAnnotations[field.name] = field.annotations
                 }
             }
 
@@ -329,11 +321,11 @@ object Annotations {
     }
 
     private fun findDeclaredAnnotations(
-        clazz: KClass<*>,
+        clazz: Class<*>,
         declaredFields: List<String>,
-        acc: HashMap<String, List<Annotation>>
-    ): Map<String, List<Annotation>> {
-        val methods = clazz.java.declaredMethods.toList()
+        acc: HashMap<String, Array<Annotation>>
+    ): Map<String, Array<Annotation>> {
+        val methods = clazz.declaredMethods.toList()
         var i = 0
         while (i < methods.size) {
             val method = methods[i]
@@ -342,31 +334,24 @@ object Annotations {
             if (methodAnnotations.isNotEmpty() && declaredFields.contains(methodNameAsField)) {
                 val result = acc[method.name]
                 if (result != null) {
-                    acc[methodNameAsField] = mergeAnnotations(result, methodAnnotations.toList())
+                    acc[methodNameAsField] = result.merge(methodAnnotations)
                 } else {
-                    acc[methodNameAsField] = methodAnnotations.toList()
+                    acc[methodNameAsField] = methodAnnotations
                 }
             }
             i += 1
         }
 
-        val interfaces = clazz.java.interfaces
+        val interfaces = clazz.interfaces
         var j = 0
         while (j < interfaces.size) {
             val intF = interfaces[j]
-            findDeclaredAnnotations(intF.kotlin, declaredFields, acc)
+            findDeclaredAnnotations(intF, declaredFields, acc)
             j += 1
         }
 
         return acc
     }
-
-    /** prefer annotations in 'a' over annotations in 'b' */
-    private fun mergeAnnotations(
-        a: List<Annotation>,
-        b: List<Annotation>
-    ): List<Annotation> =
-        a + b.filterNot { bAnnotation -> a.any { it.annotationClass == bAnnotation.annotationClass } }
 
     private fun mkFieldName(method: Method): String = method.name.replace("get", "").replaceFirstChar { it.lowercase() }
 }

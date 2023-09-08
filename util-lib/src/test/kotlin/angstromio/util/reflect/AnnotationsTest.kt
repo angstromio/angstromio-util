@@ -28,13 +28,14 @@ import angstromio.util.Widget
 import angstromio.util.WithSecondaryConstructor
 import angstromio.util.WithThings
 import angstromio.util.WithWidgets
-import angstromio.util.extensions.eq
-import angstromio.util.extensions.filter
-import angstromio.util.extensions.find
-import angstromio.util.extensions.getConstructorAnnotations
-import angstromio.util.extensions.getValue
-import angstromio.util.extensions.getValueIfAnnotatedWith
-import angstromio.util.extensions.isAnnotationPresent
+import angstromio.util.extensions.Annotations.eq
+import angstromio.util.extensions.Annotations.filter
+import angstromio.util.extensions.Annotations.find
+import angstromio.util.extensions.Annotations.flattenToArray
+import angstromio.util.extensions.Annotations.getConstructorAnnotations
+import angstromio.util.extensions.Annotations.getValue
+import angstromio.util.extensions.Annotations.getValueIfAnnotatedWith
+import angstromio.util.extensions.Annotations.isAnnotationPresent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.be
 import io.kotest.matchers.equals.shouldBeEqual
@@ -45,15 +46,23 @@ import org.junit.jupiter.api.assertThrows
 
 class AnnotationsTest : FunSpec() {
 
-    private fun getAnnotations(clazz: Class<*> = ClassOneTwoThreeFour::class.java): List<Annotation> {
-        val annotationMap: Map<String, List<Annotation>> = Annotations.getConstructorAnnotations(clazz)
+    private fun getAnnotations(
+        clazz: Class<*> = ClassOneTwoThreeFour::class.java,
+        parameterTypes: Array<Class<*>> = arrayOf(
+            String::class.java,
+            String::class.java,
+            String::class.java,
+            String::class.java
+        )
+    ): Array<Annotation> {
+        val annotationMap: Map<String, Array<Annotation>> = Annotations.getConstructorAnnotations(clazz, parameterTypes)
         annotationMap.isNotEmpty() should be(true)
-        return annotationMap.flatMap { (_, annotations) -> annotations.toList() }
+        return annotationMap.map { (_, annotations) -> annotations }.flattenToArray()
     }
 
     init {
         test("Annotations#filterIfAnnotationPresent") {
-            val annotations = getAnnotations(ClassOneTwo::class.java)
+            val annotations = getAnnotations(ClassOneTwo::class.java, arrayOf(String::class.java, String::class.java))
 
             val found = annotations.filter<MarkerAnnotation>()
             found.size should be(1)
@@ -61,7 +70,8 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#filterAnnotations") {
-            val annotations = getAnnotations(ClassThreeFour::class.java)
+            val annotations =
+                getAnnotations(ClassThreeFour::class.java, arrayOf(String::class.java, String::class.java))
 
             val found = annotations.filter(setOf(Annotation4::class.java))
             found.size should be(1)
@@ -69,7 +79,8 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#findAnnotation") {
-            val annotations = getAnnotations(ClassThreeFour::class.java)
+            val annotations =
+                getAnnotations(ClassThreeFour::class.java, arrayOf(String::class.java, String::class.java))
 
             annotations.find(Annotation1::class.java) should beNull() // not found
             val found = annotations.find(Annotation3::class.java)
@@ -78,7 +89,10 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#findAnnotation by type") {
-            val annotations = getAnnotations(ClassOneTwoThreeFour::class.java)
+            val annotations = getAnnotations(
+                ClassOneTwoThreeFour::class.java,
+                arrayOf(String::class.java, String::class.java, String::class.java, String::class.java)
+            )
             annotations.find<MarkerAnnotation>() should beNull() // not found
             annotations.find<Annotation1>() shouldNot beNull()
             annotations.find<Annotation2>() shouldNot beNull()
@@ -87,14 +101,20 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#equals") {
-            val annotations = getAnnotations(ClassOneTwoThreeFour::class.java)
+            val annotations = getAnnotations(
+                ClassOneTwoThreeFour::class.java,
+                arrayOf(String::class.java, String::class.java, String::class.java, String::class.java)
+            )
             val found = annotations.find<Annotation1>()
             found shouldNot beNull()
             found!!.eq<Annotation1>() should be(true)
         }
 
         test("Annotations#isAnnotationPresent") {
-            val annotations = getAnnotations(ClassOneTwoThreeFour::class.java)
+            val annotations = getAnnotations(
+                ClassOneTwoThreeFour::class.java,
+                arrayOf(String::class.java, String::class.java, String::class.java, String::class.java)
+            )
             val annotation1 = annotations.find<Annotation1>()!!
             val annotation2 = annotations.find<Annotation2>()!!
             val annotation3 = annotations.find<Annotation3>()!!
@@ -114,49 +134,49 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#findAnnotations") {
-            var found: Map<String, List<Annotation>> = WithThings::class.java.getConstructorAnnotations()
+            var found: Map<String, Array<Annotation>> = WithThings::class.java.getConstructorAnnotations()
             found.isEmpty() should be(false)
-            var annotations = found.flatMap { (_, annotations) -> annotations.toList() }
+            var annotations = found.map { (_, annotations) -> annotations }.flattenToArray()
             annotations.size shouldBeEqual 4
 
             found = WithWidgets::class.java.getConstructorAnnotations()
             found.isEmpty() should be(false)
-            annotations = found.flatMap { (_, annotations) -> annotations.toList() }
+            annotations = found.map { (_, annotations) -> annotations }.flattenToArray()
             annotations.size shouldBeEqual 4
 
             found = ClassOneTwo::class.java.getConstructorAnnotations()
             found.isEmpty() should be(false)
-            annotations = found.flatMap { (_, annotations) -> annotations.toList() }
+            annotations = found.map { (_, annotations) -> annotations }.flattenToArray()
             annotations.size shouldBeEqual 2
 
             found = ClassThreeFour::class.java.getConstructorAnnotations()
             found.isEmpty() should be(false)
-            annotations = found.flatMap { (_, annotations) -> annotations.toList() }
+            annotations = found.map { (_, annotations) -> annotations }.flattenToArray()
             annotations.size shouldBeEqual 2
 
             found = ClassOneTwoThreeFour::class.java.getConstructorAnnotations()
             found.isEmpty() should be(false)
-            annotations = found.flatMap { (_, annotations) -> annotations.toList() }
+            annotations = found.map { (_, annotations) -> annotations }.flattenToArray()
             annotations.size shouldBeEqual 4
 
             found = ClassOneTwoWithFields::class.java.getConstructorAnnotations()
             found.isEmpty() should be(false)
-            annotations = found.flatMap { (_, annotations) -> annotations.toList() }
+            annotations = found.map { (_, annotations) -> annotations }.flattenToArray()
             annotations.size shouldBeEqual 2
 
             found = ClassOneTwoWithAnnotatedField::class.java.getConstructorAnnotations()
             found.isEmpty() should be(false)
-            annotations = found.flatMap { (_, annotations) -> annotations.toList() }
+            annotations = found.map { (_, annotations) -> annotations }.flattenToArray()
             annotations.size shouldBeEqual 3
 
             found = ClassThreeFourAncestorOneTwo::class.java.getConstructorAnnotations()
             found.isEmpty() should be(false)
-            annotations = found.flatMap { (_, annotations) -> annotations.toList() }
+            annotations = found.map { (_, annotations) -> annotations }.flattenToArray()
             annotations.size shouldBeEqual 4
 
             found = ClassAncestorOneTwo::class.java.getConstructorAnnotations()
             found.isEmpty() should be(false)
-            annotations = found.flatMap { (_, annotations) -> annotations.toList() }
+            annotations = found.map { (_, annotations) -> annotations }.flattenToArray()
             annotations.size shouldBeEqual 3
         }
 
@@ -170,7 +190,7 @@ class AnnotationsTest : FunSpec() {
                 )
             }
 
-            val annotationMap: Map<String, List<Annotation>> =
+            val annotationMap: Map<String, Array<Annotation>> =
                 ClassOneTwoWithFields::class.java.getConstructorAnnotations(
                     arrayOf(
                         String::class.java,
@@ -187,11 +207,11 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#getValueIfAnnotatedWith") {
-            val annotationsMap: Map<String, List<Annotation>> =
+            val annotationsMap: Map<String, Array<Annotation>> =
                 WithThings::class.java.getConstructorAnnotations()
 
             annotationsMap.isEmpty() should be(false)
-            val annotations = annotationsMap.flatMap { (_, annotations) -> annotations.toList() }
+            val annotations = annotationsMap.map { (_, annotations) -> annotations }.flattenToArray()
             val annotation1 = annotations.find<Annotation1>()!!
             val annotation2 = annotations.find<Annotation2>()!!
 
@@ -217,11 +237,11 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#getValue") {
-            val annotationsMap: Map<String, List<Annotation>> =
+            val annotationsMap: Map<String, Array<Annotation>> =
                 ClassThreeFour::class.java.getConstructorAnnotations()
 
             annotationsMap.isEmpty() should be(false)
-            val annotations = annotationsMap.flatMap { (_, annotations) -> annotations.toList() }
+            val annotations = annotationsMap.map { (_, annotations) -> annotations }.flattenToArray()
             val annotation3 = annotations.find<Annotation3>()!!
             val annotation4 = annotations.find<Annotation4>()!!
 
@@ -233,9 +253,7 @@ class AnnotationsTest : FunSpec() {
             Annotations.getValue(annotation4) should beNull()
 
             val clazzFiveAnnotationsMap = ClassFive::class.java.getConstructorAnnotations()
-            val clazzFiveAnnotations = clazzFiveAnnotationsMap.flatMap { (_, annotations) ->
-                annotations.toList()
-            }
+            val clazzFiveAnnotations = clazzFiveAnnotationsMap.map { (_, annotations) -> annotations }.flattenToArray()
             val annotation5 =
                 clazzFiveAnnotations.find<Annotation5>()!!
             // Annotation5 has a uniquely named method
@@ -251,8 +269,13 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#secondaryConstructor") {
-            val annotationMap: Map<String, List<Annotation>> =
-                WithSecondaryConstructor::class.java.getConstructorAnnotations(arrayOf(String::class.java, String::class.java))
+            val annotationMap: Map<String, Array<Annotation>> =
+                WithSecondaryConstructor::class.java.getConstructorAnnotations(
+                    arrayOf(
+                        String::class.java,
+                        String::class.java
+                    )
+                )
 
             annotationMap.isEmpty() should be(false)
             annotationMap.size shouldBeEqual 2
@@ -263,7 +286,7 @@ class AnnotationsTest : FunSpec() {
             annotationMap["one"] should beNull() // not found
             annotationMap["two"] should beNull() // not found
 
-            val annotations = annotationMap.flatMap { (_, annotations) -> annotations.toList() }
+            val annotations = annotationMap.map { (_, annotations) -> annotations }.flattenToArray()
             annotations.find<MarkerAnnotation>() should beNull() // not found
             annotations.find<Annotation1>() should beNull() // not found
             annotations.find<Annotation2>() should beNull() // not found
@@ -272,8 +295,13 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#secondaryConstructor 1") {
-            val annotationMap: Map<String, List<Annotation>> =
-                WithSecondaryConstructor::class.java.getConstructorAnnotations(arrayOf(Int::class.java, Int::class.java))
+            val annotationMap: Map<String, Array<Annotation>> =
+                WithSecondaryConstructor::class.java.getConstructorAnnotations(
+                    arrayOf(
+                        Int::class.java,
+                        Int::class.java
+                    )
+                )
 
             annotationMap.isEmpty() should be(false)
             annotationMap.size shouldBeEqual 2
@@ -284,7 +312,7 @@ class AnnotationsTest : FunSpec() {
             annotationMap["three"] should beNull() // not found
             annotationMap["four"] should beNull() // not found
 
-            val annotations = annotationMap.flatMap { (_, annotations) -> annotations.toList() }
+            val annotations = annotationMap.map { (_, annotations) -> annotations }.flattenToArray()
             annotations.find<MarkerAnnotation>() should beNull() // not found
             annotations.find<Annotation1>() shouldNot beNull()
             annotations.find<Annotation2>() shouldNot beNull()
@@ -293,7 +321,7 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#secondaryConstructor 2") {
-            val annotationMap: Map<String, List<Annotation>> =
+            val annotationMap: Map<String, Array<Annotation>> =
                 StaticSecondaryConstructor::class.java.getConstructorAnnotations(
                     arrayOf(
                         String::class.java,
@@ -310,7 +338,7 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#secondaryConstructor 3") {
-            val annotationMap: Map<String, List<Annotation>> =
+            val annotationMap: Map<String, Array<Annotation>> =
                 StaticSecondaryConstructor::class.java.getConstructorAnnotations(
                     arrayOf(
                         Int::class.java,
@@ -327,7 +355,7 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#secondaryConstructor 4") {
-            val annotationMap: Map<String, List<Annotation>> =
+            val annotationMap: Map<String, Array<Annotation>> =
                 StaticSecondaryConstructor::class.java.getConstructorAnnotations()
 
             annotationMap.isEmpty() should be(false)
@@ -337,7 +365,7 @@ class AnnotationsTest : FunSpec() {
             annotationMap["two"]!!.size shouldBeEqual 1
             annotationMap["two"]!!.first().annotationClass shouldBeEqual Annotation2::class
 
-            val annotations = annotationMap.flatMap { (_, annotations) -> annotations.toList() }
+            val annotations = annotationMap.map { (_, annotations) -> annotations }.flattenToArray()
             annotations.find<MarkerAnnotation>() should beNull() // not found
             annotations.find<Annotation1>() shouldNot beNull()
             annotations.find<Annotation2>() shouldNot beNull()
@@ -346,8 +374,11 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#secondaryConstructor 5") {
-            val annotationMap: Map<String, List<Annotation>> =
-                Annotations.getConstructorAnnotations(StaticSecondaryConstructorWithMethodAnnotation::class.java)
+            val annotationMap: Map<String, Array<Annotation>> =
+                Annotations.getConstructorAnnotations(
+                    StaticSecondaryConstructorWithMethodAnnotation::class.java,
+                    arrayOf(Int::class.java, Int::class.java)
+                )
             annotationMap.isEmpty() should be(false)
             annotationMap.size shouldBeEqual 2
             annotationMap["one"]!!.size shouldBeEqual 1
@@ -356,7 +387,7 @@ class AnnotationsTest : FunSpec() {
             annotationMap["two"]!!.first().annotationClass shouldBeEqual Annotation2::class
             annotationMap["widget1"] should beNull()
 
-            val annotations = annotationMap.flatMap { (_, annotations) -> annotations.toList() }
+            val annotations = annotationMap.map { (_, annotations) -> annotations }.flattenToArray()
             val annotation1 = annotations.find<Annotation1>()!!
             val annotation2 = annotations.find<Annotation2>()!!
 
@@ -370,8 +401,11 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#secondaryConstructor 6") {
-            val annotationMap: Map<String, List<Annotation>> =
-                Annotations.getConstructorAnnotations(StaticSecondaryConstructorWithMethodAnnotation::class.java)
+            val annotationMap: Map<String, Array<Annotation>> =
+                Annotations.getConstructorAnnotations(
+                    StaticSecondaryConstructorWithMethodAnnotation::class.java,
+                    arrayOf(Int::class.java, Int::class.java)
+                )
 
             annotationMap.isEmpty() should be(false)
             annotationMap.size shouldBeEqual 2
@@ -381,7 +415,7 @@ class AnnotationsTest : FunSpec() {
             annotationMap["two"]!!.first().annotationClass shouldBeEqual Annotation2::class
             annotationMap["widget1"] should beNull()
 
-            val annotations = annotationMap.flatMap { (_, annotations) -> annotations.toList() }
+            val annotations = annotationMap.map { (_, annotations) -> annotations }.flattenToArray()
             annotations.find<MarkerAnnotation>() should beNull() // not found
             annotations.find<Annotation1>() shouldNot beNull()
             annotations.find<Annotation2>() shouldNot beNull()
@@ -425,7 +459,7 @@ class AnnotationsTest : FunSpec() {
             }
             e1.message should be(
                 "Unable to locate a constructor for '${AncestorWithAnnotations::class.qualifiedName}' with parameter types: [${
-                    listOf(String::class.java, Int::class.java).joinToString(
+                    arrayOf(String::class.java, Int::class.java).joinToString(
                         ", "
                     )
                 }]"
@@ -441,7 +475,7 @@ class AnnotationsTest : FunSpec() {
         }
 
         test("Annotations#generic types") {
-            val annotationMap: Map<String, List<Annotation>> =
+            val annotationMap: Map<String, Array<Annotation>> =
                 GenericTestClass::class.java.getConstructorAnnotations(arrayOf(Object::class.java)) // generic types resolve to Object
 
             annotationMap.isEmpty() should be(false)
@@ -449,13 +483,13 @@ class AnnotationsTest : FunSpec() {
             annotationMap["one"]!!.size shouldBeEqual 1
             annotationMap["one"]!!.first().annotationClass shouldBeEqual Annotation1::class
 
-            val annotations = annotationMap.flatMap { (_, annotations) -> annotations.toList() }
+            val annotations = annotationMap.map { (_, annotations) -> annotations }.flattenToArray()
             annotations.find<MarkerAnnotation>() should beNull() // not found
             annotations.find<Annotation1>() shouldNot beNull()
         }
 
         test("Annotations#generic types 1") {
-            val annotationMap: Map<String, List<Annotation>> =
+            val annotationMap: Map<String, Array<Annotation>> =
                 GenericTestClassWithMultipleArgs::class.java.getConstructorAnnotations(
                     arrayOf(
                         Object::class.java,
@@ -470,7 +504,7 @@ class AnnotationsTest : FunSpec() {
             annotationMap["two"]!!.size shouldBeEqual 1
             annotationMap["two"]!!.first().annotationClass shouldBeEqual Annotation2::class
 
-            val annotations = annotationMap.flatMap { (_, annotations) -> annotations.toList() }
+            val annotations = annotationMap.map { (_, annotations) -> annotations }.flattenToArray()
             annotations.find<MarkerAnnotation>() should beNull() // not found
             annotations.find<Annotation1>() shouldNot beNull()
             annotations.find<Annotation2>() shouldNot beNull()

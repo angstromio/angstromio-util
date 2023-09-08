@@ -8,6 +8,7 @@ import angstromio.util.NoSecondaryInvokeFunction
 import angstromio.util.StaticSecondaryConstructor
 import angstromio.util.WithSecondaryConstructor
 import angstromio.util.WithThings
+import angstromio.util.extensions.Annotations.getConstructorAnnotations
 import angstromio.util.extensions.KClasses.getConstructor
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.be
@@ -32,7 +33,7 @@ class KClassesTest : FunSpec({
             parameter.type.javaType == Int::class.javaPrimitiveType
         } should be(true)
     }
-    
+
     test("KClasses#getConstructor - find static secondary constructor using list of parameter types") {
         val constructor = StaticSecondaryConstructor::class.getConstructor(listOf(String::class, String::class))
         assert(constructor != null)
@@ -44,7 +45,13 @@ class KClassesTest : FunSpec({
         } should be(true)
 
         // try with incorrect parameter types list
-        StaticSecondaryConstructor::class.getConstructor(listOf(String::class, String::class, String::class)) should beNull()
+        StaticSecondaryConstructor::class.getConstructor(
+            listOf(
+                String::class,
+                String::class,
+                String::class
+            )
+        ) should beNull()
     }
 
     test(" KClasses#getConstructor - find static secondary constructor using vararg parameter types") {
@@ -93,15 +100,20 @@ class KClassesTest : FunSpec({
     }
 
     test(" KClasses#getConstructorAnnotations") {
-        val found: Map<String, List<Annotation>> = WithThings::class.java.getConstructorAnnotations()
+        val found: Map<String, Array<Annotation>> = WithThings::class.java.getConstructorAnnotations()
         found.isEmpty() should be(false)
         val annotations = found.flatMap { (_, annotations) -> annotations.toList() }
         annotations.size shouldBeEqual 4
     }
 
     test(" KClasses#getConstructorAnnotations 2") {
-        val annotationMap: Map<String, List<Annotation>> =
-            StaticSecondaryConstructor::class.java.getConstructorAnnotations(arrayOf(String::class.java, String::class.java))
+        val annotationMap: Map<String, Array<Annotation>> =
+            StaticSecondaryConstructor::class.java.getConstructorAnnotations(
+                arrayOf(
+                    String::class.java,
+                    String::class.java
+                )
+            )
 
         annotationMap.isEmpty() should be(false)
         annotationMap.size shouldBeEqual 2
@@ -112,7 +124,7 @@ class KClassesTest : FunSpec({
     }
 
     test(" KClasses#getConstructorAnnotations 3") {
-        val annotationMap: Map<String, List<Annotation>> =
+        val annotationMap: Map<String, Array<Annotation>> =
             StaticSecondaryConstructor::class.java.getConstructorAnnotations(arrayOf(Int::class.java, Int::class.java))
 
         annotationMap.isEmpty() should be(false)
@@ -124,8 +136,13 @@ class KClassesTest : FunSpec({
     }
 
     test(" KClasses#getConstructorAnnotations 4") {
-        val annotationMap: Map<String, List<Annotation>> =
-            WithSecondaryConstructor::class.java.getConstructorAnnotations(arrayOf(String::class.java, String::class.java))
+        val annotationMap: Map<String, Array<Annotation>> =
+            WithSecondaryConstructor::class.java.getConstructorAnnotations(
+                arrayOf(
+                    String::class.java,
+                    String::class.java
+                )
+            )
 
         annotationMap.isEmpty() should be(false)
         annotationMap.size shouldBeEqual 2
