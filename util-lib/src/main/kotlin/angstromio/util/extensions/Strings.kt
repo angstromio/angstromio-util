@@ -7,8 +7,8 @@ object Strings {
     private val SnakeCaseRegexSecondPass = """([a-z\d])([A-Z])""".toRegex()
     private val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 
-    /** Returns a random string of the given size */
-    fun randomString(size: Int = 16): String {
+    /** Returns a random alphanumeric string of the given size */
+    fun randomAlphanumericString(size: Int = 16): String {
         assert(size > 0)
         return (1..size)
             .map { Random.nextInt(0, charPool.size).let { charPool[it] } }

@@ -4,11 +4,14 @@ import angstromio.util.extensions.Strings.toCamelCase
 import angstromio.util.extensions.Strings.toPascalCase
 import angstromio.util.extensions.Strings.toSnakeCase
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.be
+import io.kotest.matchers.equals.shouldBeEqual
+import io.kotest.matchers.should
 import java.util.*
 
 class StringsTest : FunSpec({
 
-    test("StringOps#snakeCase") {
+    test("Strings#snakeCase") {
         // return a null if given null
         assert(null.toSnakeCase() == null)
         // empty string
@@ -39,7 +42,7 @@ class StringsTest : FunSpec({
         assert("HTML5Editor2TOC".toSnakeCase() == "html5_editor2_toc")
     }
 
-    test("StringOps#pascalCase") {
+    test("Strings#pascalCase") {
         assert("foo_bar".toPascalCase() == "FooBar")
         assert("foo__bar".toPascalCase() == "FooBar")
         assert("foo___bar".toPascalCase() == "FooBar")
@@ -60,7 +63,7 @@ class StringsTest : FunSpec({
         assert("Editor2TOC".toPascalCase() == "Editor2TOC")
     }
 
-    test("StringOps#camelCase") {
+    test("Strings#camelCase") {
         assert("foo_bar".toCamelCase() == "fooBar")
         assert("foo__bar".toCamelCase() == "fooBar")
         assert("foo___bar".toCamelCase() == "fooBar")
@@ -80,7 +83,7 @@ class StringsTest : FunSpec({
         assert("Editor2TOC".toCamelCase() == "editor2TOC")
     }
 
-    test("StringOps#toPascalCase & toCamelCase Method function") {
+    test("Strings#toPascalCase & toCamelCase Method function") {
         val name = "emperor_norton"
         // test that the first letter for toCamelCase is lower-cased
         name.toCamelCase()?.toList()?.get(0)?.isLowerCase()?.let { assert(it) }
@@ -91,5 +94,12 @@ class StringsTest : FunSpec({
                         Locale.getDefault()
                     ) else it.toString()
                 })
+    }
+    
+    test("Strings#randomAlphanumericString") {
+        Strings.randomAlphanumericString().length shouldBeEqual 16
+        Strings.randomAlphanumericString(32).length shouldBeEqual 32
+
+        Strings.randomAlphanumericString().all { it.isLetterOrDigit() } should be(true)
     }
 })
