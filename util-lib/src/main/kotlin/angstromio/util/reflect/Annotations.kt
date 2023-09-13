@@ -10,6 +10,7 @@ import java.lang.reflect.Field
 import java.lang.reflect.Method
 import kotlin.reflect.KCallable
 import kotlin.reflect.KParameter
+import kotlin.reflect.full.companionObject
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaMethod
@@ -261,11 +262,7 @@ object Annotations {
         val kClazz = clazz.kotlin
 
         val clazzAnnotations = hashMapOf<String, Array<Annotation>>()
-        val constructor = if (parameterTypes.isEmpty()) {
-            kClazz.primaryConstructor
-        } else {
-            kClazz.getConstructor(*(parameterTypes.map { it.kotlin }.toTypedArray()))
-        }
+        val constructor = kClazz.getConstructor(parameterTypes.map { it.kotlin } )
         if (constructor == null) {
             val message = if (parameterTypes.isEmpty()) {
                 "Unable to locate a primary no-arg constructor for class '${clazz.name}'."

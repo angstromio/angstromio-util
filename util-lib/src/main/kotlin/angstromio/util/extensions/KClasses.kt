@@ -1,5 +1,6 @@
 package angstromio.util.extensions
 
+import java.lang.reflect.ParameterizedType
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
@@ -48,7 +49,12 @@ object KClasses {
         } else {
             parameters.mapIndexed { index, parameter ->
                 val parameterType = parameterTypes[index]
-                parameter.typeName == parameterType.starProjectedType.javaType.typeName
+                when (parameter) {
+                    is ParameterizedType -> // compare erased types only
+                        parameter.rawType == parameterType.java
+                    else ->
+                        parameter == parameterType.java
+                }
             }.all { it }
         }
     }
