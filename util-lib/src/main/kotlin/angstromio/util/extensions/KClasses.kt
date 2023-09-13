@@ -6,6 +6,7 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.companionObject
 import kotlin.reflect.full.declaredFunctions
+import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.jvm.javaType
 import kotlin.reflect.jvm.kotlinFunction
@@ -33,7 +34,9 @@ object KClasses {
      */
     fun KClass<*>.getConstructor(parameterTypes: List<KClass<*>>): KFunction<*>? {
         return try {
-            this.java.getConstructor(*(parameterTypes.map { it.java }).toTypedArray()).kotlinFunction
+            if (parameterTypes.isEmpty()) { this.primaryConstructor } else {
+                this.java.getConstructor(*(parameterTypes. map { it.java }).toTypedArray()).kotlinFunction
+            }
         } catch (e: NoSuchMethodException) {
             // try to find an 'invoke' function on companion
             this.companionObject?.declaredFunctions?.find { kFunction ->
