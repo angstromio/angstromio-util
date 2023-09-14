@@ -10,6 +10,7 @@ import angstromio.util.WithSecondaryConstructor
 import angstromio.util.WithThings
 import angstromio.util.extensions.Annotations.getConstructorAnnotations
 import angstromio.util.extensions.KClasses.getConstructor
+import angstromio.util.extensions.KClasses.getConstructors
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.be
 import io.kotest.matchers.equals.shouldBeEqual
@@ -150,5 +151,12 @@ class KClassesTest : FunSpec({
         annotationMap["three"]!!.first().annotationClass shouldBeEqual Annotation3::class
         annotationMap["four"]!!.size shouldBeEqual 1
         annotationMap["four"]!!.first().annotationClass shouldBeEqual Annotation4::class
+    }
+
+    test("KClasses#getConstructors") {
+        val withStaticSecondaryConstructor = StaticSecondaryConstructor::class.getConstructors()
+        withStaticSecondaryConstructor.size shouldBeEqual 2
+        withStaticSecondaryConstructor.first().name should be("<init>")
+        withStaticSecondaryConstructor.last().name should be("invoke")
     }
 })

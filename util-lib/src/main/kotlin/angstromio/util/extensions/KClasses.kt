@@ -1,5 +1,6 @@
 package angstromio.util.extensions
 
+import angstromio.util.extensions.KClasses.getConstructor
 import java.lang.reflect.ParameterizedType
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -39,10 +40,18 @@ object KClasses {
             }
         } catch (e: NoSuchMethodException) {
             // try to find an 'invoke' function on companion
-            this.companionObject?.declaredFunctions?.find { kFunction ->
-                kFunction.name == "invoke" && matchParameters(kFunction.parameters, parameterTypes)
+            this.companionObject?.declaredFunctions?.find { kfn ->
+                kfn.isOperator && kfn.name == "invoke" && matchParameters(kfn.parameters, parameterTypes)
             }
         }
+    }
+
+    fun KClass<*>.getConstructors(): List<KFunction<*>> {
+        val constructors = this.constructors.toList()
+        val companionConstructors = this.companionObject?.declaredFunctions?.filter { kfn ->
+            kfn.isOperator && kfn.name == "invoke"
+        } ?: emptyList()
+        return constructors + companionConstructors
     }
 
     private fun matchParameters(kParameters: List<KParameter>, parameterTypes: List<KClass<*>>): Boolean {
