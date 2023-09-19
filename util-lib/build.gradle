@@ -20,9 +20,9 @@ plugins {
     id 'signing'
 }
 
+description = 'A collection of Kotlin utilities.'
 group 'io.angstrom'
 version '0.0.1-SNAPSHOT'
-def projectDescription = 'A collection of Kotlin utilities.'
 
 // Apply a specific Java toolchain to ease working on different environments.
 // Can set a toolchain via the java extension, and Kotlin compilation tasks will use it,
@@ -89,9 +89,8 @@ dependencies {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            groupId = group
             artifactId = rootProject.name
-            version = version
+            
             from components.java
             versionMapping {
                 usage('java-api') {
@@ -101,9 +100,10 @@ publishing {
                     fromResolutionResult()
                 }
             }
+            
             pom {
                 name = rootProject.name
-                description = projectDescription
+                description = project.description
                 url = String.format('https://angstrom.io/github/angstromio/%s/', rootProject.name)
                 licenses {
                     license {
