@@ -7,6 +7,8 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.be
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.should
+import org.junit.jupiter.api.assertThrows
+import java.lang.AssertionError
 import java.util.*
 
 class StringsTest : FunSpec({
@@ -101,5 +103,15 @@ class StringsTest : FunSpec({
         Strings.randomAlphanumericString(32).length shouldBeEqual 32
 
         Strings.randomAlphanumericString().all { it.isLetterOrDigit() } should be(true)
+    }
+
+    test("Strings#randomAlphanumericString invalid size") {
+        assertThrows<AssertionError> {
+            Strings.randomAlphanumericString(0)
+        }
+
+        assertThrows<AssertionError> {
+            Strings.randomAlphanumericString(-1)
+        }
     }
 })

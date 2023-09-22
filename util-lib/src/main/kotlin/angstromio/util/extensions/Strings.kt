@@ -9,7 +9,7 @@ object Strings {
 
     /** Returns a random alphanumeric string of the given size */
     fun randomAlphanumericString(size: Int = 16): String {
-        assert(size > 0)
+        if (size <= 0) throw AssertionError("size must be greater than 0.")
         return (1..size)
             .map { Random.nextInt(0, charPool.size).let { charPool[it] } }
             .joinToString("")

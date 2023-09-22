@@ -10,7 +10,9 @@ import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.jvm.javaType
+import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.jvm.kotlinFunction
+import kotlin.reflect.typeOf
 
 object KClasses {
 

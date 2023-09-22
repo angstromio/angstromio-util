@@ -6,6 +6,7 @@ import angstromio.util.Annotation3
 import angstromio.util.Annotation4
 import angstromio.util.NoSecondaryInvokeFunction
 import angstromio.util.StaticSecondaryConstructor
+import angstromio.util.StaticSecondaryWithParameterizedTypes
 import angstromio.util.WithSecondaryConstructor
 import angstromio.util.WithThings
 import angstromio.util.extensions.Annotations.getConstructorAnnotations
@@ -19,7 +20,11 @@ import io.kotest.matchers.should
 import io.kotest.matchers.shouldNot
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
+import kotlin.reflect.KTypeProjection
+import kotlin.reflect.KVariance
+import kotlin.reflect.full.createType
 import kotlin.reflect.javaType
+import kotlin.reflect.jvm.jvmErasure
 
 @OptIn(ExperimentalStdlibApi::class)
 class KClassesTest : FunSpec({
@@ -158,5 +163,47 @@ class KClassesTest : FunSpec({
         withStaticSecondaryConstructor.size shouldBeEqual 2
         withStaticSecondaryConstructor.first().name should be("<init>")
         withStaticSecondaryConstructor.last().name should be("invoke")
+    }
+
+    test("KClasses#getConstructor with parameterized members") {
+        val kClazz = List::class.createType(
+            arguments =
+            listOf(
+                KTypeProjection(
+                    KVariance.INVARIANT,
+                    String::class.createType()
+                )
+            )
+        ).jvmErasure
+        val constructor = StaticSecondaryWithParameterizedTypes::class.getConstructor(kClazz)
+        constructor shouldNot beNull()
+    }
+
+    test("KClasses#getConstructors 2") {
+        val withStaticSecondaryConstructor = StaticSecondaryWithParameterizedTypes::class.getConstructors()
+        withStaticSecondaryConstructor.size shouldBeEqual 3
+        withStaticSecondaryConstructor[0].name should be("<init>")
+
+        val constructor1 = withStaticSecondaryConstructor[1]
+        constructor1.name should be("invoke")
+        val constructor1Params = withStaticSecondaryConstructor[1].parameters.filter { it.kind == KParameter.Kind.VALUE }
+        constructor1Params.size shouldBeEqual 1
+        constructor1Params[0].type should be(IntArray::class.createType())
+
+        val constructor2 = withStaticSecondaryConstructor[2]
+        constructor2.name should be("invoke")
+        val constructor2Params = withStaticSecondaryConstructor[2].parameters.filter { it.kind == KParameter.Kind.VALUE }
+        constructor2Params.size shouldBeEqual 1
+        constructor2Params[0].type should be(
+            List::class.createType(
+                arguments =
+                listOf(
+                    KTypeProjection(
+                        KVariance.INVARIANT,
+                        String::class.createType()
+                    )
+                )
+            )
+        )
     }
 })

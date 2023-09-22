@@ -65,6 +65,13 @@ data class StaticSecondaryConstructor(@Annotation1 val one: Int, @Annotation2 va
     }
 }
 
+data class StaticSecondaryWithParameterizedTypes(val first: String?, val second: String?) {
+    companion object {
+        operator fun invoke(names: List<String>): StaticSecondaryWithParameterizedTypes = StaticSecondaryWithParameterizedTypes(names[0], names[1])
+        operator fun invoke(vararg ints: Int): StaticSecondaryWithParameterizedTypes = StaticSecondaryWithParameterizedTypes(ints[0].toString(), ints[1].toString())
+    }
+}
+
 data class StaticSecondaryConstructorWithMethodAnnotation(
     @Annotation1 val one: Int,
     @Annotation2 val two: Int
