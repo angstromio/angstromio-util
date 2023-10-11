@@ -5,8 +5,6 @@
 
 name: Publish
 env:
-  ORG_GRADLE_PROJECT_SonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
-  ORG_GRADLE_PROJECT_SonatypePassword: ${{ secrets.SONATYPE_USERNAME }}
   ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_SIGNING_KEY }}
   ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_SIGNING_PASSWORD }}
 defaults:
@@ -44,5 +42,5 @@ jobs:
       - name: Publish with Gradle
         uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
         with:
-          arguments: clean publish --no-daemon
+          arguments: -PSonatypeUsername="${{ secrets.SONATYPE_USERNAME }}" -PSonatypePassword="${{ secrets.SONATYPE_PASSWORD }}" clean publish --no-daemon
 
