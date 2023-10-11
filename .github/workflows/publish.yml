@@ -40,8 +40,8 @@ jobs:
       - uses: olafurpg/setup-gpg@v3
       - name: Set up GPG
         run: | 
-          printf -- "%s" "$GPG_SIGNING_PASSWORD" | base64 --decode | gpg --import --no-tty --batch --yes
-          printf "%s" "default-key $GPG_SIGNING_KEY" >  ~/.gnupg/gpg.conf
+          echo "$GPG_SIGNING_PASSWORD" | base64 --decode | gpg --import --no-tty --batch --yes
+          echo "default-key $GPG_SIGNING_KEY" >  ~/.gnupg/gpg.conf
       - name: Publish with Gradle
         uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
         with:
