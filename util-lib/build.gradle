@@ -9,7 +9,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-    id 'org.jetbrains.kotlin.jvm' version '1.9.0'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.10'
 
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
@@ -106,7 +106,7 @@ publishing {
                     fromResolutionResult()
                 }
             }
-            
+
             pom {
                 name = rootProject.name
                 description = project.description
@@ -145,8 +145,8 @@ publishing {
 }
 
 signing {
-    def signingKey = findProperty("signingKey")
-    def signingPassword = findProperty("signingPassword")
+    def signingKey = findProperty("signingKey") as String
+    def signingPassword = findProperty("signingPassword") as String
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign publishing.publications.mavenJava
 }
