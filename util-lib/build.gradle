@@ -22,7 +22,7 @@ plugins {
 
 description = 'A collection of Kotlin utilities.'
 group 'io.angstrom'
-version '0.0.1-SNAPSHOT'
+version project['io.angstrom.version']
 
 // Apply a specific Java toolchain to ease working on different environments.
 // Can set a toolchain via the java extension, and Kotlin compilation tasks will use it,
