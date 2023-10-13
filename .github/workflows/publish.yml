@@ -13,10 +13,6 @@ defaults:
 on:
   repository_dispatch:
     types: [publish]
-  schedule:
-    # * is a special character in YAML, so you have to quote this string
-    # run every night at 8AM UTC (1AM PT)
-    - cron: '0 8 * * *'
 
 permissions:
   contents: read
