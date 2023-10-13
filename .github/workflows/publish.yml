@@ -50,4 +50,6 @@ jobs:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
           gh workflow run publish.yml --ref main --repo angstromio/angstromio-validator
+          sleep 5
+          gh run watch --repo angstromio/angstromio-validator $(gh run list --repo angstromio/angstromio-validator -w workflow.yaml -L1 --json databaseId --jq .[0].databaseId)
 
