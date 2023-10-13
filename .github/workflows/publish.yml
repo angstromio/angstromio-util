@@ -49,6 +49,8 @@ jobs:
         with:
           app_id: ${{ secrets.API_ACCESS_APP_ID }}
           private_key: ${{ secrets.API_ACCESS_APP_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: "angstromio-validator"
       - name: Trigger angstromio/angstromio-validator Publish
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
