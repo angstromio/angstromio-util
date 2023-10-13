@@ -1,4 +1,4 @@
-# Runs on a cron trigger or manually via a repository dispatch event:
+# Runs via a repository dispatch event:
 #
 # { "event_type": "publish" }
 #
